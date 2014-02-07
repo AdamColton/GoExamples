@@ -9,7 +9,7 @@ type Accumulator struct{
   ch chan int
 }
 
-func (self Accumulator) loop(listener chan bool) {
+func (self *Accumulator) loop(listener chan bool) {
   for ;; {
     self.sum += <- self.ch
     if (self.sum == 0){
