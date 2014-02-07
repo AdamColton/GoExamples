@@ -6,36 +6,26 @@ import (
 )
 
 func main() {
-  primes(100)
+  primes(10000)
 }
 
-func primes(x int){
+func primes(x int) {
   if (x < 2){
     fmt.Println("Primes start at +2, do it right")
     return
   }
-  x -= 2
-  p := make([]bool, x)
-  findPrimes(p)
-  for i := 0; i<x; i++ {
-    if (!p[i]){
-      fmt.Println(i+2)
-    }
-  }
-}
-
-func findPrimes(primes []bool) {
-  if (len(primes) == 1){
-    return
-  }
-  var x = len(primes) + 1
+  primes := make([]bool, x)
   var sqrt = int( math.Ceil( math.Sqrt( float64(x)) ) )
-  findPrimes(primes[0:sqrt-1])
-  for i := 0; i<x-1 ; i++ {
+  for i := 2; i<sqrt ; i++ {
     if (!primes[i]){
-      for j := (i+2)*(i+2); j-1<x; j += (i+2){
-        primes[j-2] = true
+      for j := i*i; j<x; j += i{
+        primes[j] = true
       } 
     }
   }
+  for i := 2; i<x; i++{
+    if (!primes[i]){
+      fmt.Println(i);
+    }
+  } 
 }
