@@ -3,10 +3,13 @@ package main
 import (
   "fmt"
   "math"
+  "os"
+  "strconv"
 )
 
 func main() {
-  primes(10000)
+  i, _ := strconv.Atoi(os.Args[1])
+  primes(i)
 }
 
 func primes(x int) {
@@ -14,18 +17,20 @@ func primes(x int) {
     fmt.Println("Primes start at +2, do it right")
     return
   }
-  primes := make([]bool, x)
+  composites := make([]bool, x)
   var sqrt = int( math.Ceil( math.Sqrt( float64(x)) ) )
   for i := 2; i<sqrt ; i++ {
-    if (!primes[i]){
+    if (!composites[i]){
       for j := i*i; j<x; j += i{
-        primes[j] = true
+        composites[j] = true
       } 
     }
   }
+  c := 0
   for i := 2; i<x; i++{
-    if (!primes[i]){
-      fmt.Println(i);
+    if (!composites[i]){
+      c++
     }
-  } 
+  }
+  fmt.Println(c);
 }
