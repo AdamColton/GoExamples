@@ -2,12 +2,14 @@ package main
 
 import(
   "fmt"
+  "runtime"
 )
 
 func main(){
+  runtime.GOMAXPROCS(runtime.NumCPU())
   coins := [...]int{200,100,50,20,10,5,2,1}
   ch := make(chan int)
-  go waysToMakeChange(200, coins[:], ch)
+  go waysToMakeChange(500, coins[:], ch)
   fmt.Println(<- ch)
 }
 

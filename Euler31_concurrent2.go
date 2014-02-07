@@ -2,6 +2,7 @@ package main
 
 import(
   "fmt"
+  "runtime"
 )
 
 type Accumulator struct{
@@ -20,13 +21,14 @@ func (self *Accumulator) loop(listener chan bool) {
 }
 
 func main(){
+  runtime.GOMAXPROCS(runtime.NumCPU())
   coins := [...]int{200,100,50,20,10,5,2,1}
-  accumulator := Accumulator{0, make(chan int, 200)}
-  runCounter := Accumulator{0, make(chan int, 200)}
+  accumulator := Accumulator{0, make(chan int, 2000)}
+  runCounter := Accumulator{0, make(chan int, 2000)}
   listener := make(chan bool)
   go accumulator.loop(listener)
   go runCounter.loop(listener)
-  go waysToMakeChange(200, coins[:], &accumulator, &runCounter)
+  go waysToMakeChange(500, coins[:], &accumulator, &runCounter)
   <-listener
   fmt.Println(accumulator.sum)
 }

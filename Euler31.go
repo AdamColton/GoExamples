@@ -6,7 +6,7 @@ import(
 
 func main(){
   coins := [...]int{200,100,50,20,10,5,2,1}
-  fmt.Println(waysToMakeChange(1100, coins[:]))
+  fmt.Println(waysToMakeChange(500, coins[:]))
 }
 
 func waysToMakeChange(amount int, coins []int)(int){
