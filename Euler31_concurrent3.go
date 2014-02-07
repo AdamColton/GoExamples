@@ -13,18 +13,23 @@ func main(){
   fmt.Println(<- ch)
 }
 
-func waysToMakeChange_concurrent(amount int, coins []int, out chan int, depth int){
+func checker(amount int, coins []int)(int, bool){
   if (amount == 0){
-    out <- 1
-    return
+    return 1, true
   }
   if (len(coins) == 1){
     if (amount % coins[0] == 0){
-      out <- 1
-      return
-    } else {
-      out <- 0
+      return 1, true
     }
+    return 0, true
+  }
+  return 0, false
+}
+
+func waysToMakeChange_concurrent(amount int, coins []int, out chan int, depth int){
+  ways, shouldReturn := checker(amount, coins)
+  if (shouldReturn){
+    out <- ways
     return
   }
 
@@ -41,23 +46,15 @@ func waysToMakeChange_concurrent(amount int, coins []int, out chan int, depth in
       sum += <- ch
     }
   } else {
-    max := 1 + amount/coins[0]
-    for i := 0; i<max; i++{
-      sum += waysToMakeChange(amount - i*coins[0], coins[1:])
-    }
+    sum = waysToMakeChange(amount, coins)
   }
   out <- sum
 }
 
 func waysToMakeChange(amount int, coins []int)(int){
-  if (amount == 0){
-    return 1
-  }
-  if (len(coins) == 1){
-    if (amount % coins[0] == 0){
-      return 1
-    }
-    return 0
+  ways, shouldReturn := checker(amount, coins)
+  if (shouldReturn){
+    return ways
   }
 
   sum := 0
