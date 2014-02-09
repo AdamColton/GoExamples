@@ -152,3 +152,4 @@ func (self *Game) Copy()(Game){
   board := self.board
   return Game{self.turn, board, self.moveCount, self.winner}
 }
+

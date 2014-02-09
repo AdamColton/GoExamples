@@ -30,7 +30,7 @@ func monkeyCarlo(game *c4.Game){
 
 func fullMonkeyCarloGame(game *c4.Game) int{
   positions := 0
-  for ; game.Turn() != 0 ;{
+  for game.Turn() != 0 {
     monkeyCarlo(game)
     positions++
   }
@@ -50,16 +50,19 @@ func (self *MonkeyCarlo) Move(game *c4.Game) {
 }
 
 type MonteCarlo struct{
-  Simulations int
+  Positions int
+}
+func NewMonteCarlo(positions int) MonteCarlo {
+  return MonteCarlo{positions}
 }
 func (self *MonteCarlo) Move(game *c4.Game) {
   moveRecord := [7][2]int{}
-  for i := 0; i<self.Simulations; i++{
+  for i := 0; i<self.Positions; {
     move := randomMove(game)
     sim := game.Copy()
     moveRecord[move][0]++
     sim.Move(move)
-    fullMonkeyCarloGame(&sim)
+    i += fullMonkeyCarloGame(&sim)
     moveRecord[move][1] += moveValue(game, &sim)
   }
   game.Move( bestMove(&moveRecord) )
@@ -70,8 +73,7 @@ func bestMove(moves *[7][2]int) int {
   bestScore := 0.0
   for i := 0; i<7; i++ {
     if (moves[i][0] > 0){
-      score := float64(moves[i][1]) / float64(moves[i][0])
-      if (score > bestScore){
+      if score := float64(moves[i][1]) / float64(moves[i][0]); score > bestScore {
         bestScore = score
         bestMove = i
       }
@@ -97,47 +99,39 @@ type moveData struct{
 func (self *MonteCarlo_P) Move(game *c4.Game) {
   moveRecord := [7][2]int{}
   ch := make(chan moveData)
-  stop := make(chan bool, self.threads)
+  moveChannel := make(chan int, self.threads)
   for i:=0; i<self.threads; i++ {
-    go gameThread(ch, stop, game)
+    moveChannel <- randomMove(game)
+    go gameThread(ch, moveChannel, game)
   }
-  for i:=0 ; i<self.positions;{
+  for i, positions := 0, 0 ; i<self.threads;{
     move := <-ch
     moveRecord[move.col][0]++
     moveRecord[move.col][1] += move.val
-    i += move.positions
-  }
-  for i:=0; i<self.threads; i++ {
-    stop <- true
-  }
-  for ;; {
-    shouldBreak := false
-    select{
-    case move := <-ch:
-      moveRecord[move.col][0]++
-      moveRecord[move.col][1] += move.val
-    default:
-      shouldBreak = true
-    }
-    if (shouldBreak){
-      break
+    positions += move.positions
+    if positions > self.positions {
+      moveChannel <- -1
+      i++
+    } else {
+      moveChannel <- randomMove(game)
     }
   }
   game.Move( bestMove(&moveRecord) )
 }
 
-func gameThread(out chan moveData, stop chan bool, game *c4.Game){
-  for ;; {
-    select{
-    case <-stop:
+func gameThread(out chan moveData, moveChannel chan int, game *c4.Game){
+  var move int
+  var positions int
+  var sim c4.Game
+  for {
+    move = <- moveChannel
+    if move == -1 {
       return
-    default:
-      move := randomMove(game)
-      sim := game.Copy()
-      sim.Move(move)
-      positions := fullMonkeyCarloGame(&sim)
-      out <- moveData{move, moveValue(game, &sim), positions}
-    } 
+    }
+    sim = game.Copy()
+    sim.Move(move)
+    positions = fullMonkeyCarloGame(&sim)
+    out <- moveData{move, moveValue(game, &sim), positions}
   }
   
 }
